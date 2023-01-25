@@ -9,8 +9,8 @@ def username_validator(username):
         raise ValidationError("Invalid username!")
 
 def email_validator(email):
-    pat = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]')
+    pat = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
     if re.fullmatch(pat, email):
-        print(email)
+        return email
     else:
         raise ValidationError("Invalid email!")
