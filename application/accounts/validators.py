@@ -16,7 +16,7 @@ def email_validator(email):
         raise ValidationError("Invalid email!(only _ . - + and english letters")
 
 def letter_validator(value):
-    pat = re.compile(r"[a-zA-Z]")
+    pat = re.compile(r"[a-zA-Z]+")
     if re.fullmatch(pat, value):
         return value
     else:

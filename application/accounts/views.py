@@ -1,7 +1,28 @@
 from django.shortcuts import render, redirect
 from .forms import SignUpForm
-from django.http import HttpResponse
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.sites.shortcuts import get_current_site
+from .tokens import account_activation_token
 # Create your views here.
+def activate(request, uidb64, token):
+    return redirect("/")
+
+def activateEmail(request, user, to_email):
+    mail_subject = "Activate your user account"
+    message = render_to_string("template_activate_account.html", {
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        'protocol': 'https' if request.is_secure() else 'http'
+    })
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    if email.send():
+        print("Email sended!")
 def index(request):
     return render(request, "index.html")
 
@@ -9,7 +30,10 @@ def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            user.is_active = False
+            activateEmail(request, user, form.cleaned_data.get("email"))
+            user.save()
             return redirect('/accounts/login/')
     else:
         form = SignUpForm()
