@@ -7,9 +7,20 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.sites.shortcuts import get_current_site
 from .tokens import account_activation_token
+from django.contrib.auth import get_user_model
 # Create your views here.
 def activate(request, uidb64, token):
-    return redirect("/")
+    User = get_user_model()
+    try:
+        uid = force_str((urlsafe_base64_decode(uidb64)))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+    return redirect("/accounts/login/")
 
 def activateEmail(request, user, to_email):
     mail_subject = "Activate your user account"
