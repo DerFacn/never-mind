@@ -12,14 +12,20 @@ from django.contrib.auth import get_user_model
 def activate(request, uidb64, token):
     User = get_user_model()
     try:
-        uid = force_str((urlsafe_base64_decode(uidb64)))
+        print("start deocde uidb64")
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        print("uid decoded")
+        print(uid)
         user = User.objects.get(pk=uid)
+        print("user finded")
     except:
         user = None
 
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
+        print("user activated")
         user.save()
+        print("user saved")
     return redirect("/accounts/login/")
 
 def activateEmail(request, user, to_email):
@@ -43,8 +49,8 @@ def signup(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
-            activateEmail(request, user, form.cleaned_data.get("email"))
             user.save()
+            activateEmail(request, user, form.cleaned_data.get("email"))
             return redirect('/accounts/login/')
     else:
         form = SignUpForm()
